@@ -42,14 +42,14 @@ public class ExprReplace extends SimpleExpression<String> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
 
 		if (matchedPattern == 0 || matchedPattern == 2) {
-			exprNeedle = (Expression<String>) expr[0];
 			exprHaystack = (Expression<String>) expr[1];
 			exprReplacement = (Expression<String>) expr[2];
 		} else {
-			exprNeedle = (Expression<String>) expr[0];
-			exprReplacement = (Expression<String>) expr[1];
 			exprHaystack = (Expression<String>) expr[2];
+			exprReplacement = (Expression<String>) expr[1];
 		}
+
+		exprNeedle = (Expression<String>) expr[0];
 
 		isRegex = matchedPattern == 2 || matchedPattern == 3;
 		isFirst = parseResult.hasTag("first");
