@@ -20,3 +20,5 @@ test "replace expression":
 	assert replace "hello", "test" in "hello this is a test" with "!" is "! this is a !" with "multi replace"
 
 	assert regex replace "[hl]", "[ts]" in "hello this is a test" with "!" is "!e!!o !!i! i! a !e!!" with "multi regex replace"
+
+	assert replace "A" in "aaAAAbbB" with "!" with case sensitivity is "aa!!!bbB" with "case sensitivity"
