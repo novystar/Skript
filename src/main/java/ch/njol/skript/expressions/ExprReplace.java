@@ -39,9 +39,9 @@ public class ExprReplace extends SimpleExpression<String> {
 		return true;
 	}
 
-	private Expression<String> exprNeedle;
-	private Expression<String> exprHaystack;
-	private Expression<String> exprReplacement;
+	private Expression<String> needleExpr;
+	private Expression<String> haystackExpr;
+	private Expression<String> replacementExpr;
 
 	private boolean isRegex;
 	private boolean isFirst;
@@ -52,14 +52,14 @@ public class ExprReplace extends SimpleExpression<String> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
 
 		if (matchedPattern == 0 || matchedPattern == 2) {
-			exprHaystack = (Expression<String>) expr[1];
-			exprReplacement = (Expression<String>) expr[2];
+			haystackExpr = (Expression<String>) expr[1];
+			replacementExpr = (Expression<String>) expr[2];
 		} else {
-			exprHaystack = (Expression<String>) expr[2];
-			exprReplacement = (Expression<String>) expr[1];
+			haystackExpr = (Expression<String>) expr[2];
+			replacementExpr = (Expression<String>) expr[1];
 		}
 
-		exprNeedle = (Expression<String>) expr[0];
+		needleExpr = (Expression<String>) expr[0];
 
 		isRegex = matchedPattern == 2 || matchedPattern == 3;
 		isFirst = parseResult.hasTag("first");
@@ -73,9 +73,9 @@ public class ExprReplace extends SimpleExpression<String> {
 	@Override
 	@Nullable
 	protected String[] get(Event event) {
-		String replacement = exprReplacement.getSingle(event);
-		String[] needles = exprNeedle.getAll(event);
-		String[] haystacks = exprHaystack.getAll(event);
+		String replacement = replacementExpr.getSingle(event);
+		String[] needles = needleExpr.getAll(event);
+		String[] haystacks = haystackExpr.getAll(event);
 
 		if (replacement == null) {
 			return haystacks;
@@ -133,7 +133,7 @@ public class ExprReplace extends SimpleExpression<String> {
 			builder.append("regex");
 		}
 
-		builder.append(exprNeedle, "in", exprHaystack, "with", exprReplacement);
+		builder.append(needleExpr, "in", haystackExpr, "with", replacementExpr);
 
 		if (isCaseSensitive) {
 			builder.append("with case sensitivity");
