@@ -33,8 +33,8 @@ public class ExprReplace extends SimpleExpression<String> {
 			SyntaxRegistry.EXPRESSION,
 			DefaultSyntaxInfos.Expression.builder(ExprReplace.class, String.class)
 				.addPatterns(
-					"%strings% where %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]",
-					"%strings% where %strings% [is|are] regex replaced with %string%"
+					"%strings% where [(first:first instance[s]|all instances) of] %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]",
+					"%strings% where [(first:first instance[s]|all instances) of] regex [pattern[s]] %strings% [is|are] replaced with %string%"
 				)
 				.supplier(ExprReplace::new)
 				.build()
