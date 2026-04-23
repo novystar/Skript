@@ -1,24 +1,18 @@
 test "replace expression":
 
-	assert replace "hello" in "hello this is a test" with "goodbye" is "goodbye this is a test" with "replace"
+	assert "hello this is a test" where "hello" is replaced with "goodbye" is "goodbye this is a test" with "replace"
 
-	assert regex replace "[lsa]" in "hello this is a test" with "!" is "he!!o thi! i! ! te!t" with "regex replace"
+
+	assert "hello this is a test" where "[el]" is regex replaced with "!" is "h!!!o this is a t!st" with "regex replace pattern 1"
+
+	assert "hello this is a test" where "[el]" is replaced with "!" using regex is "h!!!o this is a t!st" with "regex replace pattern 2"
 
 
 	set {_test::*} to "hello", "this", "is", "a", "test"
 
-	assert replace "hello" in {_test::*} with "goodbye" is ("goodbye", "this", "is", "a", "test") with "replace list"
+	assert {_test::*} where "hello", "tes" are replaced with "!" is ("!", "this", "is", "a", "!t") with "replace list"
 
-	assert regex replace "[lsa]" in {_test::*} with "!" is ("he!!o", "thi!", "i!", "!", "te!t") with "regex replace list"
-
-
-	assert replace "hello", "test" in {_test::*} with "!" is ("!", "this", "is", "a", "!") with "multi replace list"
-
-	assert regex replace "[hl]", "[ts]" in {_test::*} with "!" is ("!e!!o", "!!i!", "i!", "a", "!e!!") with "multi regex replace list"
+	assert {_test::*} where "[el]" is regex replaced with "!" is "h!!!o", "this", "is", "a", "t!st" with "regex replace list"
 
 
-	assert replace "hello", "test" in "hello this is a test" with "!" is "! this is a !" with "multi replace"
-
-	assert regex replace "[hl]", "[ts]" in "hello this is a test" with "!" is "!e!!o !!i! i! a !e!!" with "multi regex replace"
-
-	assert replace "A" in "aaAAAbbB" with "!" with case sensitivity is "aa!!!bbB" with "case sensitivity"
+	assert "aaaaAAAAbbbbBBBB" where "a" is replaced with "!" with case sensitivity is "!!!!AAAAbbbbBBBB" with "replace case sensitivity"

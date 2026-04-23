@@ -1,13 +1,11 @@
 package org.skriptlang.skript.common.elements.expressions;
 
-import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptConfig;
 import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.SyntaxStringBuilder;
 import ch.njol.skript.lang.util.SimpleExpression;
@@ -34,7 +32,10 @@ public class ExprReplace extends SimpleExpression<String> {
 		registry.register(
 			SyntaxRegistry.EXPRESSION,
 			DefaultSyntaxInfos.Expression.builder(ExprReplace.class, String.class)
-				.addPattern("%strings% where %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]")
+				.addPatterns(
+					"%strings% where %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]",
+					"%strings% where %strings% [is|are] regex replaced with %string%"
+				)
 				.supplier(ExprReplace::new)
 				.build()
 		);
@@ -44,8 +45,8 @@ public class ExprReplace extends SimpleExpression<String> {
 	private Expression<String> haystackExpr;
 	private Expression<String> replacementExpr;
 
-	private boolean isRegex;
 	private boolean isFirst;
+	private boolean isRegex = false;
 	private boolean isCaseSensitive = false;
 
 	@SuppressWarnings("unchecked")
@@ -56,7 +57,10 @@ public class ExprReplace extends SimpleExpression<String> {
 		needleExpr = (Expression<String>) expr[1];
 		replacementExpr = (Expression<String>) expr[2];
 
-		isRegex = parseResult.hasTag("regex");
+		if (matchedPattern == 1 || parseResult.hasTag("regex")) {
+			isRegex = true;
+		}
+
 		isFirst = parseResult.hasTag("first");
 
 		if (SkriptConfig.caseSensitive.value() || parseResult.hasTag("case")) {
