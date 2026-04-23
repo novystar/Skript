@@ -1,0 +1,22 @@
+test "replace expression":
+
+	assert replace "hello" in "hello this is a test" with "goodbye" is "goodbye this is a test" with "replace"
+
+	assert regex replace "[lsa]" in "hello this is a test" with "!" is "he!!o thi! i! ! te!t" with "regex replace"
+
+
+	set {_test::*} to "hello", "this", "is", "a", "test"
+
+	assert replace "hello" in {_test::*} with "goodbye" is ("goodbye", "this", "is", "a", "test") with "replace list"
+
+	assert regex replace "[lsa]" in {_test::*} with "!" is ("he!!o", "thi!", "i!", "!", "te!t") with "regex replace list"
+
+
+	assert replace "hello", "test" in {_test::*} with "!" is ("!", "this", "is", "a", "!") with "multi replace list"
+
+	assert regex replace "[hl]", "[ts]" in {_test::*} with "!" is ("!e!!o", "!!i!", "i!", "a", "!e!!") with "multi regex replace list"
+
+
+	assert replace "hello", "test" in "hello this is a test" with "!" is "! this is a !" with "multi replace"
+
+	assert regex replace "[hl]", "[ts]" in "hello this is a test" with "!" is "!e!!o !!i! i! a !e!!" with "multi regex replace"

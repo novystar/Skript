@@ -14,8 +14,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ExprReplace extends SimpleExpression<String> {
+
 	static {
 		Skript.registerExpression(ExprReplace.class, String.class, ExpressionType.SIMPLE,
 			"replace [(all|every)|first:[the] first] %strings% in %strings% with %string% [case:with case sensitivity]",
@@ -25,10 +28,16 @@ public class ExprReplace extends SimpleExpression<String> {
 	}
 
 	@Override
-	public Class<? extends String> getReturnType() { return String.class; }
+	public Class<? extends String> getReturnType() {
+		return String.class;
+	}
 
-	public boolean isSingle() { return false; }
-	public boolean canBeSingle() { return true; }
+	public boolean isSingle() {
+		return false;
+	}
+	public boolean canBeSingle() {
+		return true;
+	}
 
 	private Expression<String> exprNeedle;
 	private Expression<String> exprHaystack;
@@ -62,19 +71,6 @@ public class ExprReplace extends SimpleExpression<String> {
 	}
 
 	@Override
-	public String toString(@Nullable Event event, boolean debug) {
-		SyntaxStringBuilder builder = new SyntaxStringBuilder(event, debug);
-
-		builder.append("replace");
-
-		if (isFirst) { builder.append("first"); }
-		if (isRegex) { builder.append("regex"); }
-		if (isCaseSensitive) { builder.append("case sensitive"); }
-
-		return builder.toString();
-	}
-
-	@Override
 	@Nullable
 	protected String[] get(Event event) {
 		String replacement = exprReplacement.getSingle(event);
@@ -85,33 +81,64 @@ public class ExprReplace extends SimpleExpression<String> {
 			return haystacks;
 		}
 
-		List<String> result = new ArrayList<>();
+		List<String> result = new ArrayList<>(haystacks.length);
 
-		for (String haystack : haystacks) {
+		if (isRegex) {
+			List<Pattern> patterns = new ArrayList<>(needles.length);
 			for (String needle : needles) {
-				if (isRegex) {
-					try {
-						if (isFirst) {
-							haystack = haystack.replaceFirst(needle, replacement);
-						} else {
-							haystack = haystack.replaceAll(needle, replacement);
-						}
-					} catch (Exception ignored) {}
+				try { // Pre compile regex for use with multiple haystacks
+					patterns.add(Pattern.compile(needle));
+				} catch (Exception ignored) {
+				}
+			}
 
-				} else {
-
+			for (String haystack : haystacks) {
+				for (Pattern pattern : patterns) {
+					Matcher matcher = pattern.matcher(haystack);
+					if (isFirst) {
+						haystack = matcher.replaceFirst(replacement);
+					} else {
+						haystack = matcher.replaceAll(replacement);
+					}
+				}
+				result.add(haystack);
+			}
+		} else {
+			for (String haystack : haystacks) {
+				for (String needle : needles) {
 					if (isFirst) {
 						haystack = StringUtils.replaceFirst(haystack, needle, replacement, isCaseSensitive);
 					} else {
 						haystack = StringUtils.replace(haystack, needle, replacement, isCaseSensitive);
 					}
 				}
-
+				result.add(haystack);
 			}
-			result.add(haystack);
 		}
 
 		return result.toArray(new String[0]);
 
+	}
+
+	@Override
+	public String toString(@Nullable Event event, boolean debug) {
+		SyntaxStringBuilder builder = new SyntaxStringBuilder(event, debug);
+
+		builder.append("replace");
+
+		if (isFirst) {
+			builder.append("first");
+		}
+		if (isRegex) {
+			builder.append("regex");
+		}
+
+		builder.append(exprNeedle, "in", exprHaystack, "with", exprReplacement);
+
+		if (isCaseSensitive) {
+			builder.append("with case sensitivity");
+		}
+
+		return builder.toString();
 	}
 }
