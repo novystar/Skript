@@ -2,16 +2,17 @@ package ch.njol.skript.expressions;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.ExpressionList;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.SyntaxStringBuilder;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import ch.njol.util.StringUtils;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ExprReplace extends SimpleExpression<String> {
 	static {
@@ -26,6 +27,7 @@ public class ExprReplace extends SimpleExpression<String> {
 	public Class<? extends String> getReturnType() { return String.class; }
 
 	public boolean isSingle() { return false; }
+	public boolean canBeSingle() { return true; }
 
 	private Expression<String> exprNeedle;
 	private Expression<String> exprHaystack;
@@ -33,6 +35,7 @@ public class ExprReplace extends SimpleExpression<String> {
 
 	private boolean isRegex = false;
 	private boolean isFirst = false;
+	private boolean isCaseSensitive = false;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -50,6 +53,7 @@ public class ExprReplace extends SimpleExpression<String> {
 
 		isRegex = matchedPattern == 2 || matchedPattern == 3;
 		isFirst = parseResult.hasTag("first");
+		isCaseSensitive = parseResult.hasTag("case");
 		return true;
 	}
 
@@ -61,6 +65,7 @@ public class ExprReplace extends SimpleExpression<String> {
 
 		if (isFirst) { builder.append("first"); }
 		if (isRegex) { builder.append("regex"); }
+		if (isCaseSensitive) { builder.append("case sensitive"); }
 
 		return builder.toString();
 	}
@@ -68,49 +73,41 @@ public class ExprReplace extends SimpleExpression<String> {
 	@Override
 	@Nullable
 	protected String[] get(Event event) {
-
 		String replacement = exprReplacement.getSingle(event);
+		String[] needles = exprNeedle.getAll(event);
+		String[] haystacks = exprHaystack.getAll(event);
 
 		if (replacement == null) {
 			return null;
 		}
 
-		if (exprHaystack instanceof ExpressionList<String> list) {
-			for (Expression<? extends String> haystackExpr : list.getExpressions()) {
-				return (String[]) getReplacement(event, haystackExpr, replacement);
-			}
-		} else {
-			return (String[]) getReplacement(event, exprHaystack, replacement);
-		}
-		return null;
-	}
-
-	@Nullable
-	private Object[] getReplacement(Event event, Expression<? extends String> haystackExpr, String replacement) {
-		String[] needles = exprNeedle.getAll(event);
-		String[] haystacks = exprHaystack.getAll(event);
-
-		ArrayList<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		for (String haystack : haystacks) {
-
-			String haystackResult = haystack;
-
 			for (String needle : needles) {
-				if (isFirst) {
-					haystackResult = haystackResult.replaceFirst(needle, replacement);
+				if (isRegex) {
+					try {
+						if (isFirst) {
+							haystack = haystack.replaceFirst(needle, replacement);
+						} else {
+							haystack = haystack.replaceAll(needle, replacement);
+						}
+					} catch (Exception ignored) {}
+
 				} else {
-					haystackResult = haystackResult.replaceAll(needle, replacement);
+
+					if (isFirst) {
+						haystack = StringUtils.replaceFirst(haystack, needle, replacement, isCaseSensitive);
+					} else {
+						haystack = StringUtils.replace(haystack, needle, replacement, isCaseSensitive);
+					}
 				}
+
 			}
-
-			result.add(haystackResult);
-
+			result.add(haystack);
 		}
 
-		return result.toArray();
+		return result.toArray(new String[0]);
 
 	}
-
-
 }
