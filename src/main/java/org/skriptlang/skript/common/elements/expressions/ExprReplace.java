@@ -1,7 +1,11 @@
-package ch.njol.skript.expressions;
+package org.skriptlang.skript.common.elements.expressions;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptConfig;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Example;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -11,20 +15,29 @@ import ch.njol.util.Kleenean;
 import ch.njol.util.StringUtils;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.DefaultSyntaxInfos;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+@Name("Text Replacement")
+@Description("Performs a text replacement on a given value, returning the result. Supports regex and case sensitive replacement.")
+@Example("send \"Welcome [player]\" where \"[player]\" is replaced with \"%player%\" to player")
+@Since("2.16")
 public class ExprReplace extends SimpleExpression<String> {
 
-	static {
-		Skript.registerExpression(ExprReplace.class, String.class, ExpressionType.SIMPLE,
-			"replace [(all|every)|first:[the] first] %strings% in %strings% with %string% [case:with case sensitivity]",
-			"replace [(all|every)|first:[the] first] %strings% with %string% in %strings% [case:with case sensitivity]",
-			"(replace [with|using] regex|regex replace) %strings% in %strings% with %string%",
-			"(replace [with|using] regex|regex replace) %strings% with %string% in %strings%");
+	public static void register(SyntaxRegistry registry) {
+		registry.register(
+			SyntaxRegistry.EXPRESSION,
+			DefaultSyntaxInfos.Expression.builder(ExprReplace.class, String.class)
+				.addPattern("%strings% where %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]")
+				.supplier(ExprReplace::new)
+				.build()
+		);
 	}
 
 	private Expression<String> needleExpr;
@@ -39,17 +52,11 @@ public class ExprReplace extends SimpleExpression<String> {
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
 
-		if (matchedPattern == 0 || matchedPattern == 2) {
-			haystackExpr = (Expression<String>) expr[1];
-			replacementExpr = (Expression<String>) expr[2];
-		} else {
-			haystackExpr = (Expression<String>) expr[2];
-			replacementExpr = (Expression<String>) expr[1];
-		}
+		haystackExpr = (Expression<String>) expr[0];
+		needleExpr = (Expression<String>) expr[1];
+		replacementExpr = (Expression<String>) expr[2];
 
-		needleExpr = (Expression<String>) expr[0];
-
-		isRegex = matchedPattern == 2 || matchedPattern == 3;
+		isRegex = parseResult.hasTag("regex");
 		isFirst = parseResult.hasTag("first");
 
 		if (SkriptConfig.caseSensitive.value() || parseResult.hasTag("case")) {
@@ -59,7 +66,7 @@ public class ExprReplace extends SimpleExpression<String> {
 	}
 
 	@Override
-	protected String[] @Nullable get(Event event) {
+	protected String @Nullable [] get(Event event) {
 		String replacement = replacementExpr.getSingle(event);
 		String[] needles = needleExpr.getArray(event);
 		String[] haystacks = haystackExpr.getArray(event);
