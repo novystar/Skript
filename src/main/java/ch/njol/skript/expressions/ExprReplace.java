@@ -1,6 +1,7 @@
 package ch.njol.skript.expressions;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.SkriptConfig;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -33,8 +34,8 @@ public class ExprReplace extends SimpleExpression<String> {
 	private Expression<String> exprHaystack;
 	private Expression<String> exprReplacement;
 
-	private boolean isRegex = false;
-	private boolean isFirst = false;
+	private boolean isRegex;
+	private boolean isFirst;
 	private boolean isCaseSensitive = false;
 
 	@SuppressWarnings("unchecked")
@@ -53,7 +54,10 @@ public class ExprReplace extends SimpleExpression<String> {
 
 		isRegex = matchedPattern == 2 || matchedPattern == 3;
 		isFirst = parseResult.hasTag("first");
-		isCaseSensitive = parseResult.hasTag("case");
+
+		if (SkriptConfig.caseSensitive.value() || parseResult.hasTag("case")) {
+			isCaseSensitive = true;
+		}
 		return true;
 	}
 
