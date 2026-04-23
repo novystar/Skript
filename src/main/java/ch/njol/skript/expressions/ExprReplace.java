@@ -27,18 +27,6 @@ public class ExprReplace extends SimpleExpression<String> {
 			"(replace [with|using] regex|regex replace) %strings% with %string% in %strings%");
 	}
 
-	@Override
-	public Class<? extends String> getReturnType() {
-		return String.class;
-	}
-
-	public boolean isSingle() {
-		return false;
-	}
-	public boolean canBeSingle() {
-		return true;
-	}
-
 	private Expression<String> needleExpr;
 	private Expression<String> haystackExpr;
 	private Expression<String> replacementExpr;
@@ -71,11 +59,10 @@ public class ExprReplace extends SimpleExpression<String> {
 	}
 
 	@Override
-	@Nullable
-	protected String[] get(Event event) {
+	protected String[] @Nullable get(Event event) {
 		String replacement = replacementExpr.getSingle(event);
-		String[] needles = needleExpr.getAll(event);
-		String[] haystacks = haystackExpr.getAll(event);
+		String[] needles = needleExpr.getArray(event);
+		String[] haystacks = haystackExpr.getArray(event);
 
 		if (replacement == null) {
 			return haystacks;
@@ -118,6 +105,18 @@ public class ExprReplace extends SimpleExpression<String> {
 
 		return result.toArray(new String[0]);
 
+	}
+
+	public boolean isSingle() {
+		return false;
+	}
+	public boolean canBeSingle() {
+		return true;
+	}
+
+	@Override
+	public Class<? extends String> getReturnType() {
+		return String.class;
 	}
 
 	@Override
