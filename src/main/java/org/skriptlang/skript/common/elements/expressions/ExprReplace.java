@@ -21,11 +21,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 @Name("Text Replacement")
 @Description("Performs a text replacement on a given value, returning the result. Supports regex and case sensitive replacement.")
 @Example("send \"Welcome [player]\" where \"[player]\" is replaced with \"%player%\" to player")
-@Since("2.16")
+@Since("INSERT VERSION")
 public class ExprReplace extends SimpleExpression<String> {
 
 	public static void register(SyntaxRegistry registry) {
@@ -33,8 +32,8 @@ public class ExprReplace extends SimpleExpression<String> {
 			SyntaxRegistry.EXPRESSION,
 			DefaultSyntaxInfos.Expression.builder(ExprReplace.class, String.class)
 				.addPatterns(
-					"%strings% where [(first:first instance[s]|all instances) of] %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]",
-					"%strings% where [(first:first instance[s]|all instances) of] regex [pattern[s]] %strings% [is|are] replaced with %string%"
+					"%strings% where [(first:[the] first instance[s]|all instances) of] %strings% [is|are] replaced with %string% [regex:using regex|case:with case sensitivity]",
+					"%strings% where [(first:[the] first instance[s]|all instances) of] regex [pattern[s]] %strings% [is|are] replaced with %string%"
 				)
 				.supplier(ExprReplace::new)
 				.build()
@@ -115,12 +114,12 @@ public class ExprReplace extends SimpleExpression<String> {
 		}
 
 		return result.toArray(new String[0]);
-
 	}
 
 	public boolean isSingle() {
 		return false;
 	}
+
 	public boolean canBeSingle() {
 		return true;
 	}
@@ -135,19 +134,13 @@ public class ExprReplace extends SimpleExpression<String> {
 		SyntaxStringBuilder builder = new SyntaxStringBuilder(event, debug);
 
 		builder.append("replace");
-
-		if (isFirst) {
+		if (isFirst) 
 			builder.append("first");
-		}
-		if (isRegex) {
+		if (isRegex) 
 			builder.append("regex");
-		}
-
 		builder.append(needleExpr, "in", haystackExpr, "with", replacementExpr);
-
-		if (isCaseSensitive) {
+		if (isCaseSensitive)
 			builder.append("with case sensitivity");
-		}
 
 		return builder.toString();
 	}
