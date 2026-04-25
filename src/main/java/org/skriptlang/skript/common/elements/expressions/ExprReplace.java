@@ -118,13 +118,9 @@ public class ExprReplace extends SimpleExpression<String> {
 
 	@Override
 	public boolean isSingle() {
-		return false;
+		return haystackExpr.isSingle();
 	}
 
-	@Override
-	public boolean canBeSingle() {
-		return true;
-	}
 
 	@Override
 	public Class<? extends String> getReturnType() {
@@ -146,4 +142,5 @@ public class ExprReplace extends SimpleExpression<String> {
 
 		return builder.toString();
 	}
+
 }
