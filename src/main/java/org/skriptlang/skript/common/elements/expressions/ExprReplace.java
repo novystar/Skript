@@ -116,10 +116,12 @@ public class ExprReplace extends SimpleExpression<String> {
 		return result.toArray(new String[0]);
 	}
 
+	@Override
 	public boolean isSingle() {
 		return false;
 	}
 
+	@Override
 	public boolean canBeSingle() {
 		return true;
 	}
